@@ -1,0 +1,58 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/userdb
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  application:
+    name: user-service
+
+  cloud:
+    config:
+      uri: http://config-server:8888
+      fail-fast: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    com.example.userservice: DEBUG
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    hostname: user-service
+  client:
+    registryFetchIntervalSeconds: 5
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 5000
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+
+server:
+  port: 8081
+
+environment:
+  JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
